@@ -1,73 +1,78 @@
 # Windows Intranet Zones Automation (IaC)
 
+![Lint and Test Automation](https://github.com)
+
 A production-ready infrastructure-as-code solution to automate Windows Security Zone configurations on client workstations. This project eliminates annoying and workflow-blocking Windows Security Warnings (*"Opening these files might be harmful to your computer"*) when users access corporate file shares (SMB/NAS).
 
 ## Business Problem & Context
-In enterprise environments, users often work with files hosted on internal network-attached storage (NAS) or file servers. By default, modern Windows installations treat raw IP-based network shares (e.g., `\\192.168.1.252\shares`) as untrusted untrusted Internet environments.
 
-**Impact:** 
-* Users are interrupted by security prompts every time they open documents, spreadsheets, or scripts.
-* Decreased operational velocity and increased IT support ticket volume.
-* Automated startup scripts hosted on network drives fail silently.
+In enterprise environments, users frequently access files hosted on internal network-attached storage (NAS) or file servers. By default, Windows systems treat raw IP-based network shares (e.g., `\\192.168.1.252\shares`) as untrusted Internet environments.
 
-**Solution:** This repository automates the injection of specific internal subnets and server identities into the **Local Intranet Zone (Zone 1)** using PowerShell and Ansible.
+**Impact:**
+* Users are repeatedly blocked by modal security dialogs when launching applications, documents, or scripts.
+* Disruption of routine workflows and elevated volume of Service Desk tickets.
+* Automated startup tasks executing from network paths fail or hang without interactive confirmation.
+
+### Baseline Issue
+![Windows Security Warning Baseline](./01_security_warning_baseline.png)
 
 ## Architecture & Tech Stack
+
 * **Target OS:** Windows 10 / Windows 11 / Windows Server
-* **Configuration Management:** Ansible (for fleet-wide deployment)
-* **Automation Engine:** PowerShell Core / Windows PowerShell v5.1+
-* **Mechanism:** Registry Manipulation via `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap`
+* **Configuration Management:** Ansible (`ansible.windows.win_regedit`)
+* **Automation Engine:** PowerShell 5.1+ / Core
+* **Mechanism:** Registry Mapping under `HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap`
+
+## Continuous Integration & Testing (CI/CD)
+
+The project includes an automated GitHub Actions pipeline (`.github/workflows/lint-and-test.yml`):
+* **Ansible Linting:** Validates playbook formatting and enterprise conventions.
+* **PowerShell Code Analysis:** Enforces code quality via `PSScriptAnalyzer`.
+* **E2E Validation:** Deploys onto a native `windows-latest` runner and executes registry verification.
+
+### Automated Pipeline Run
+![CI/CD Verification](./02_pipeline_success.png)
 
 ## Deployment & Usage
 
 ### Option 1: Standalone Execution (PowerShell)
-To apply the fix on a single machine local-style, execute the script with administrative privileges or under the targeted user context:
+Execute the script under the targeted user context or via an administrative terminal:
 
-```bash
-# Clone the repository
-git clone https://github.com
-cd windows-intranet-whitelist/scripts/
+```powershell
+# Navigate to the script directory
+cd scripts/
 
-# Execute the script specifying your corporate server IP
+# Execute configuration against the target internal address
 powershell.exe -ExecutionPolicy Bypass -File .\Add-IntranetZone.ps1 -TargetAddress "192.168.1.252"
 ```
 
-### Option 2: Enterprise Fleet Deployment (Ansible)
-To roll out the configuration across hundreds of office workstations:
+### Option 2: Fleet Deployment (Ansible)
+Roll out the configuration across managed endpoints:
 
-1. Update your inventory file with target hosts.
-2. Run the playbook:
 ```bash
 ansible-playbook -i inventory.ini playbooks/configure_intranet_zones.yml
 ```
 
 ## Verification & Healthcheck
 
-To verify that the configuration was applied successfully without opening the GUI Control Panel, execute the following validation command in PowerShell:
+To verify that the target address is mapped to the Local Intranet Zone without opening the GUI, run:
 
 ```powershell
-Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\192.168.1.252" -Name "file"
+Get-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains\192.168.1.252"
 ```
+
+### Execution Artifact
+![Registry Verification Output](./03_registry_state_verified.png)
 
 **Expected Output:**
 ```text
 file         : 1
+http         : 1
 PSPath       : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\...
 PSChildName  : 192.168.1.252
 ```
-*(Value `1` explicitly confirms that the server is mapped to the Local Intranet Zone).*
-## Continuous Integration (CI/CD)
+*(Value `1` confirms mapping to Zone 1 / Local Intranet).*
 
-This repository includes an automated GitHub Actions workflow to ensure production-grade code quality and operational stability.
-
-The `.github/workflows/lint-and-test.yml` pipeline performs the following stages:
-1. **Linting & Quality Control:**
-   * Validates Ansible playbooks via `ansible-lint`.
-   * Analyzes PowerShell scripts via `PSScriptAnalyzer` to meet enterprise standards.
-2. **Automated E2E Testing:**
-   * Spins up a native `windows-latest` runner.
-   * Executes `Add-IntranetZone.ps1` natively.
-   * Performs an automated registry state verification to prove the fix works successfully in an isolated Windows OS instance.
      
 ## Copyright and License
 
