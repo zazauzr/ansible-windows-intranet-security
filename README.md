@@ -1,6 +1,6 @@
 # Windows Intranet Zones Automation (IaC)
 
-![Lint and Test Automation](https://github.com)
+
 
 A production-ready infrastructure-as-code solution to automate Windows Security Zone configurations on client workstations. This project eliminates annoying and workflow-blocking Windows Security Warnings (*"Opening these files might be harmful to your computer"*) when users access corporate file shares (SMB/NAS).
 
