@@ -68,3 +68,9 @@ The `.github/workflows/lint-and-test.yml` pipeline performs the following stages
    * Spins up a native `windows-latest` runner.
    * Executes `Add-IntranetZone.ps1` natively.
    * Performs an automated registry state verification to prove the fix works successfully in an isolated Windows OS instance.
+     
+## Copyright and License
+
+Copyright (c) 2026 zazauzr. All rights reserved.
+
+This repository and all its contents (including documentation, scripts, and configuration files) are proprietary. Unauthorized copying, modification, distribution, or commercial use of any materials from this repository, via any medium, is strictly prohibited without the express prior written permission of the copyright holder.
