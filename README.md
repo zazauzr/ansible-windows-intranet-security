@@ -56,3 +56,15 @@ PSPath       : Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\...
 PSChildName  : 192.168.1.252
 ```
 *(Value `1` explicitly confirms that the server is mapped to the Local Intranet Zone).*
+## Continuous Integration (CI/CD)
+
+This repository includes an automated GitHub Actions workflow to ensure production-grade code quality and operational stability.
+
+The `.github/workflows/lint-and-test.yml` pipeline performs the following stages:
+1. **Linting & Quality Control:**
+   * Validates Ansible playbooks via `ansible-lint`.
+   * Analyzes PowerShell scripts via `PSScriptAnalyzer` to meet enterprise standards.
+2. **Automated E2E Testing:**
+   * Spins up a native `windows-latest` runner.
+   * Executes `Add-IntranetZone.ps1` natively.
+   * Performs an automated registry state verification to prove the fix works successfully in an isolated Windows OS instance.
