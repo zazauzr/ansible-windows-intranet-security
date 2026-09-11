@@ -52,3 +52,5 @@ jobs:
               exit 1
           }
           Write-Host "Success: Windows Security configuration verified!" -ForegroundColor Green
+
+            
